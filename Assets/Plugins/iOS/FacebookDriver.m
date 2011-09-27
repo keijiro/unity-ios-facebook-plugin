@@ -75,10 +75,10 @@ static NSString* kExpirationDayStore = @"FacebookExpirationDay";
 - (void)showShareDialog:(NSString *)text {
     NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                    appID_, @"app_id",
-                                   @"https://developers.facebook.com/docs/reference/dialogs/", @"link",
-                                   @"http://fbrell.com/f8.jpg", @"picture",
-                                   @"Facebook Dialogs", @"name",
-                                   @"Reference Documentation", @"caption",
+                                   @"https://github.com/keijiro/unity-ios-facebook-plugin", @"link",
+                                   @"http://cloud.github.com/downloads/keijiro/unity-ios-facebook-plugin/fb-picture.png", @"picture",
+                                   @"Facebook plugin for Unity iOS", @"name",
+                                   @"Hosted on GitHub.", @"caption",
                                    text, @"description",
                                    nil];
     
