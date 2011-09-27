@@ -9,11 +9,11 @@ static NSString* kExpirationDayStore = @"FacebookExpirationDay";
 // プライベート定義
 @interface FacebookDriver ()
 
--(void)retrieveUserName;                    // ユーザー名の取得開始
--(void)showShareDialog:(NSString *)text;    // 共有ダイアログの起動
+-(void)retrieveUserName; // ユーザー名の取得開始
+-(void)showShareDialog:(NSMutableDictionary *)params; // 共有ダイアログの起動
 
 @property (nonatomic, copy) NSString *userNameInternal;
-@property (nonatomic, copy) NSString *shareAfterLogin;
+@property (nonatomic, retain) NSMutableDictionary *shareAfterLogin;
 
 @end
 
@@ -36,7 +36,6 @@ static NSString* kExpirationDayStore = @"FacebookExpirationDay";
 
 - (id)initWithAppID:(NSString *)appID {
     if ((self = [super init])) {
-        appID_ = [appID copy];
         facebook_ = [[Facebook alloc] initWithAppId:appID andDelegate:self];
         visible_ = NO;
         // Defaultからアクセス情報を復帰させる。
@@ -56,7 +55,6 @@ static NSString* kExpirationDayStore = @"FacebookExpirationDay";
 }
 
 - (void)dealloc {
-    [appID_ release];
     [facebook_ release];
     [userNameInternal_ release];
     [shareAfterLogin_ release];
@@ -72,16 +70,7 @@ static NSString* kExpirationDayStore = @"FacebookExpirationDay";
     [facebook_ requestWithGraphPath:@"me" andDelegate:self];
 }
 
-- (void)showShareDialog:(NSString *)text {
-    NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                   appID_, @"app_id",
-                                   @"https://github.com/keijiro/unity-ios-facebook-plugin", @"link",
-                                   @"http://cloud.github.com/downloads/keijiro/unity-ios-facebook-plugin/fb-picture.png", @"picture",
-                                   @"Facebook plugin for Unity iOS", @"name",
-                                   @"Hosted on GitHub.", @"caption",
-                                   text, @"description",
-                                   nil];
-    
+- (void)showShareDialog:(NSMutableDictionary *)params {
     [facebook_ dialog:@"feed" andParams:params andDelegate:self];
 }
 
@@ -97,13 +86,13 @@ static NSString* kExpirationDayStore = @"FacebookExpirationDay";
     [facebook_ authorize:nil];
 }
 
-- (void)launchDialog:(NSString *)text {
+- (void)launchDialog:(NSMutableDictionary *)params {
     visible_ = YES;
     if (![facebook_ isSessionValid]) {
-        self.shareAfterLogin = text;
+        self.shareAfterLogin = params;
 	    [facebook_ authorize:nil];
     } else {
-        [self showShareDialog:text];
+        [self showShareDialog:params];
     }
 }
 

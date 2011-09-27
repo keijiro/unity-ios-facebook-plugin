@@ -4,22 +4,28 @@
 #import "FacebookDriver.h"
 #import "UnityPluginUtility.h"
 
-static FacebookDriver *driver;
+static NSString *s_appID;
+static FacebookDriver *s_driver;
 
 #pragma mark - Plug-in installation and uninstallation
 
 // インストール
 extern "C" void _FacebookInstall(const char *appID) {
-    if (driver == nil) {
-        driver = [[FacebookDriver alloc] initWithAppID:[UnityPluginUtility stringWithUnityString:appID]];
+    if (s_driver == nil) {
+        s_appID = [[UnityPluginUtility stringWithUnityString:appID] retain];
+        s_driver = [[FacebookDriver alloc] initWithAppID:s_appID];
     }
 }
 
 // アンインストール
 extern "C" void _FacebookUninstall() {
-    if (driver != nil) {
-        [driver release];
-        driver = nil;
+    if (s_appID != nil) {
+        [s_appID release];
+        s_appID = nil;
+    }
+    if (s_driver != nil) {
+        [s_driver release];
+        s_driver = nil;
     }
 }
 
@@ -27,33 +33,43 @@ extern "C" void _FacebookUninstall() {
 
 // ダイアログの表示状態の取得
 extern "C" BOOL _FacebookIsDialogActive() {
-    return driver.visible;
+    return s_driver.visible;
 }
 
 // ユーザー名の取得
 extern "C" char *_FacebookGetUserName() {
-    return [UnityPluginUtility heapStringWithString:driver.userName];
+    return [UnityPluginUtility heapStringWithString:s_driver.userName];
 }
 
 // サインイン
 extern "C" void _FacebookSignIn() {
-    [driver signIn];
+    [s_driver signIn];
 }
 
 // サインアウト
 extern "C" void _FacebookSignOut() {
-    [driver signOut];
+    [s_driver signOut];
 }
 
 // ダイアログの起動
-extern "C" void _FacebookLaunchDialog(const char *text) {
-    NSLog(@"%@", [UnityPluginUtility stringWithUnityString:text]);
-    [driver launchDialog:[UnityPluginUtility stringWithUnityString:text]];
+extern "C" void _FacebookLaunchDialog() {
+    // 取り扱うパラメーター群。
+    NSArray *keys = [NSArray arrayWithObjects:@"link", @"picture", @"name", @"caption", @"description", nil];
+
+    // User defaults (PlayerPrefs) に格納されたパラメーター群を取り出す。
+    NSMutableDictionary* params = [NSMutableDictionary dictionaryWithObject:s_appID forKey:@"app_id"];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    for (NSString *key in keys) {
+        NSString *value = [defaults stringForKey:[@"fbplugin_" stringByAppendingString:key]];
+        if (value) [params setObject:value forKey:key];
+    }
+    
+    [s_driver launchDialog:params];
 }
 
 #pragma mark - URL scheme handler
 
 // URLスキームのトランポリン処理用ハンドラ
 extern "C" BOOL FacebookPluginHandleOpenURL(NSURL *url) {
-    return [driver.facebook handleOpenURL:url];
+    return [s_driver.facebook handleOpenURL:url];
 }

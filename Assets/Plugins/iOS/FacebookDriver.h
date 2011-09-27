@@ -4,10 +4,9 @@
 
 @interface FacebookDriver : NSObject<FBDialogDelegate, FBSessionDelegate, FBRequestDelegate> {
 @private
-    NSString *appID_;
     Facebook *facebook_;
     NSString *userNameInternal_;
-    NSString *shareAfterLogin_;
+    NSMutableDictionary *shareAfterLogin_;
     BOOL visible_;
 }
 
@@ -30,6 +29,6 @@
 - (void)signIn;
 
 // ダイアログを起動する。
-- (void)launchDialog:(NSString *)text;
+- (void)launchDialog:(NSMutableDictionary *)params;
 
 @end
