@@ -33,20 +33,27 @@ static function SignOut() {
 }
 
 // 「ウォールへ投稿」ダイアログの起動。
-static function LaunchDialog(text : String) {
-	PlayerPrefs.SetString("fbplugin_link", "https://github.com/keijiro/unity-ios-facebook-plugin");
-	PlayerPrefs.SetString("fbplugin_picture", "http://cloud.github.com/downloads/keijiro/unity-ios-facebook-plugin/fb-picture.png");
-	PlayerPrefs.SetString("fbplugin_name", "Facebook plugin for Unity iOS");
-	PlayerPrefs.SetString("fbplugin_caption", "Hosted on GitHub.");
-	PlayerPrefs.SetString("fbplugin_description", text);
-	/*
-	PlayerPrefs.DeleteKey("fbplugin_link");
-	PlayerPrefs.DeleteKey("fbplugin_picture");
-	PlayerPrefs.DeleteKey("fbplugin_name");
-	PlayerPrefs.DeleteKey("fbplugin_caption");
-	PlayerPrefs.DeleteKey("fbplugin_description");
-	*/
+//
+// iOSの場合は次のパラメーターを使うことができる。
+// link, picture, name, caption, description
+//
+// また、他プラットフォームとの互換性を保つために
+// message パラメーターも設定することが推奨される。
+static function LaunchDialog(params : Hashtable) {
+	AddParamIfExists("link", params);
+	AddParamIfExists("picture", params);
+	AddParamIfExists("name", params);
+	AddParamIfExists("caption", params);
+	AddParamIfExists("description", params);
 	_FacebookLaunchDialog();
+}
+
+static private function AddParamIfExists(key : String, params : Hashtable) {
+	if (params.ContainsKey(key)) {
+		PlayerPrefs.SetString("fbplugin_" + key, params[key]);
+	} else {
+		PlayerPrefs.DeleteKey("fbplugin_" + key);
+	}
 }
 
 #if UNITY_IPHONE && !UNITY_EDITOR
